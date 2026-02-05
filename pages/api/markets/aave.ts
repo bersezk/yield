@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { fetchAaveReserves } from '../../../lib/aave';
 import { query as dbQuery } from '../../../lib/db';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -28,9 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    // Fallback to live fetch
-    const data = await fetchAaveReserves();
-    return res.status(200).json({ source: 'live', count: data.length, data });
+    // Fallback: live fetch not available (lib/aave missing)
+    return res.status(200).json({ source: 'live', count: 0, data: [] });
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'failed' });
   }
