@@ -1,0 +1,30 @@
+{
+  "compound": {
+    "mainnet": [
+      {
+        "cTokenAddress": "0x39AA39c021dfbaE8faC545936693aC917d5E7563",
+        "underlying": "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "symbol": "USDC"
+      }
+    ],
+    "arbitrum": [
+      {
+        "cTokenAddress": "0x0000000000000000000000000000000000000000",
+        "underlying": "0xFF970A61A04b1cA14834A43f5de4533eBDDB5CC8",
+        "symbol": "USDC"
+      }
+    ],
+    "base": [
+      {
+        "cTokenAddress": "0x0000000000000000000000000000000000000000",
+        "underlying": "0x0000000000000000000000000000000000000000",
+        "symbol": "USDC"
+      }
+    ]
+  },
+  "aave": {
+    "mainnet": { "subgraph": "https://api.thegraph.com/subgraphs/name/aave/protocol-v2" },
+    "arbitrum": { "subgraph": "https://api.thegraph.com/subgraphs/name/aave/protocol-v3-arbitrum" },
+    "base": { "subgraph": "" }
+  }
+}
