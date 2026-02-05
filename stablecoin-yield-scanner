@@ -16,3 +16,174 @@
   }
 }
 
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true
+};
+
+module.exports = nextConfig;
+
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve"
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
+
+import { Providers } from "./providers";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+
+"use client";
+
+import { WagmiConfig, createConfig } from "wagmi";
+import { mainnet, arbitrum, base } from "wagmi/chains";
+import { injected } from "wagmi/connectors";
+
+const config = createConfig({
+  chains: [mainnet, arbitrum, base],
+  connectors: [injected()],
+});
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <WagmiConfig config={config}>{children}</WagmiConfig>;
+}
+
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { injected } from "wagmi/connectors";
+
+export default function Home() {
+  const [data, setData] = useState<any[]>([]);
+  const [asset, setAsset] = useState("ALL");
+  const [chain, setChain] = useState("ALL");
+  const [sortDesc, setSortDesc] = useState(true);
+
+  const { address, isConnected } = useAccount();
+  const { connect } = useConnect({ connector: injected() });
+  const { disconnect } = useDisconnect();
+
+  useEffect(() => {
+    fetch("/api/yields")
+      .then(res => res.json())
+      .then(setData);
+  }, []);
+
+  const rows = useMemo(() => {
+    let r = data;
+    if (asset !== "ALL") r = r.filter(x => x.asset === asset);
+    if (chain !== "ALL") r = r.filter(x => x.chain === chain);
+    return [...r].sort((a, b) =>
+      sortDesc ? b.apy - a.apy : a.apy - b.apy
+    );
+  }, [data, asset, chain, sortDesc]);
+
+  return (
+    <main style={{ padding: 24, background: "#0a0a0a", minHeight: "100vh", color: "#fff" }}>
+      <header style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+        <h1>Stablecoin Yield Scanner</h1>
+        {!isConnected ? (
+          <button onClick={() => connect()}>Connect Wallet</button>
+        ) : (
+          <button onClick={() => disconnect()}>
+            {address?.slice(0, 6)}…{address?.slice(-4)}
+          </button>
+        )}
+      </header>
+
+      <div style={{ marginBottom: 16 }}>
+        <select onChange={e => setAsset(e.target.value)}>
+          <option value="ALL">All Assets</option>
+          <option>USDC</option>
+          <option>USDT</option>
+          <option>DAI</option>
+        </select>
+
+        <select onChange={e => setChain(e.target.value)} style={{ marginLeft: 8 }}>
+          <option value="ALL">All Chains</option>
+          <option>Ethereum</option>
+          <option>Arbitrum</option>
+          <option>Base</option>
+        </select>
+
+        <button onClick={() => setSortDesc(v => !v)} style={{ marginLeft: 8 }}>
+          Sort APY
+        </button>
+      </div>
+
+      <table width="100%">
+        <thead>
+          <tr>
+            <th align="left">Protocol</th>
+            <th align="left">Chain</th>
+            <th align="left">Asset</th>
+            <th align="left">APY</th>
+            <th align="left">Risk</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i}>
+              <td>{r.protocol}</td>
+              <td>{r.chain}</td>
+              <td>{r.asset}</td>
+              <td>{r.apy.toFixed(2)}%</td>
+              <td>{r.risk}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </main>
+  );
+}
+
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  const res = await fetch("https://yields.llama.fi/pools");
+  const json = await res.json();
+
+  const data = json.data
+    .filter((p: any) => ["USDC", "USDT", "DAI"].includes(p.symbol))
+    .map((p: any) => ({
+      protocol: p.project,
+      chain: p.chain,
+      asset: p.symbol,
+      apy: p.apy,
+      risk: p.apy > 6 ? "Medium" : "Low",
+    }));
+
+  return NextResponse.json(data);
+}
+
+node_modules
+.next
+.env*
+
+npm install
+npm run dev
