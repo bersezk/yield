@@ -1,4 +1,4 @@
-
+{
   "name": "defi-yield-scanner",
   "version": "0.1.0",
   "private": true,
@@ -30,3 +30,4 @@
     "typescript": "^5.2.2",
     "@types/node": "^20.3.0"
   }
+}
