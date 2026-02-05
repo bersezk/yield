@@ -121,14 +121,14 @@ export default function Home() {
   );
 }
 
-const thStyle = {
+const thStyle: React.CSSProperties = {
   color: '#aadffd',
   textAlign: 'left',
   fontWeight: 700,
   padding: '6px 10px',
   borderBottom: '2px solid #265388',
 };
-const tdStyle = {
+const tdStyle: React.CSSProperties = {
   color: '#eee',
   padding: '7px 10px',
 };
